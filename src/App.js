@@ -1,25 +1,44 @@
-import logo from './logo.svg';
-import './App.css';
+import React, { useEffect, useState } from 'react'
+import Page from './components/Page'
 
-function App() {
+const URL = 'https://62934f6e089f87a57abdea28.mockapi.io/products'
+
+const pageLimit = 5
+const App = () => {
+  const [products, setProducts] = useState([])
+  const [page, setPage] = useState(1)
+  const [endOfFeedReached, setEndOfFeedReached] = useState(false)
+  const getProducts = async () => {
+    const finalUrl = `${URL}?page=${page}&limit=${pageLimit}`
+    try {
+      const res = await fetch(finalUrl)
+      const data = await res.json()
+      setEndOfFeedReached(products.length < pageLimit) //if product is less than pageLimit then we  have reached end  // if(products.length < pagelimit) ///
+      if (page === 1) {
+        setProducts(data)
+      }
+      else {
+        setProducts(prevProducts => [...prevProducts, ...data])
+      }
+    } catch (error) {
+      console.log(error)
+    }
+
+  }
+  useEffect(() => {
+    getProducts()
+  }, [page])
+
+  const fetchMoreData = () => {
+    setPage((prevPage) => prevPage + 1)
+  }
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
-  );
+    <Page
+      products={products}
+      fetchMoreData={fetchMoreData}
+      endOfFeedReached={endOfFeedReached}
+    />
+  )
 }
 
-export default App;
+export default App
